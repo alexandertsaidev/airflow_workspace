@@ -38,7 +38,7 @@ x-airflow-common: &airflow-common
 
     # DAG 檔案掃描頻率（你有獨立 dag-processor，這個很重要）
     AIRFLOW__DAG_PROCESSOR__MIN_FILE_PROCESS_INTERVAL: "60"
-    AIRFLOW__DAG_PROCESSOR__DAG_FILE_PROCESSOR_TIMEOUT: "120"
+    AIRFLOW__DAG_PROCESSOR__DAG_FILE_PROCESSOR_TIMEOUT: "30000"
     AIRFLOW__DAG_PROCESSOR__BUNDLE_REFRESH_INTERVAL: "30"
 
   volumes:
@@ -297,6 +297,49 @@ services:
     networks:
       - airflow-network
 
+  # ─── Flink JobManager ────────────────────────────────────
+  flink-jobmanager:
+    # image: flink:2.2.0-scala_2.12-java17
+    build:
+      context: .
+      dockerfile: Dockerfile.flink
+    container_name: flink-jobmanager
+    command: jobmanager
+    ports:
+      - "127.0.0.1:8082:8081"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+    volumes:
+      - flink-checkpoints:/opt/flink/checkpoints
+      - D:\projects\stock_us_realtime_pipeline:/opt/flink/jobs
+    restart: always
+    networks:
+      - airflow-network
+
+  # ─── Flink TaskManager ───────────────────────────────────
+  flink-taskmanager:
+    # image: flink:2.2.0-scala_2.12-java17
+    build:
+      context: .
+      dockerfile: Dockerfile.flink
+    container_name: flink-taskmanager
+    command: taskmanager
+    depends_on:
+      - flink-jobmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        taskmanager.memory.process.size: 1024m
+    volumes:
+      - flink-checkpoints:/opt/flink/checkpoints
+      - D:\projects\stock_us_realtime_pipeline:/opt/flink/jobs
+    restart: always
+    networks:
+      - airflow-network
+
   # ─── PostgreSQL Stock ─────────────────────────────────────
   postgresql-db:
     image: postgres:15
@@ -326,4 +369,6 @@ volumes:
   postgres-db-volume:
   kafka-data:
   minio_data:
+  flink-checkpoints:
   postgres-stock-volume:
+  

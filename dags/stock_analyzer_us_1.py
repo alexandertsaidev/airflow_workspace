@@ -14,7 +14,7 @@ with DAG(
     # Task 1
     co_fetcher = DockerOperator(
         task_id='co_fetcher',
-        image='stock-analyzer-us:v1.0',
+        image='stock-analyzer-us:v2.0',
         command='python -m us.data_pipeline.company_symbols.us_co_symbol_fetcher',
         mount_tmp_dir=False,   # ← 必加
         docker_url='unix://var/run/docker.sock',
@@ -25,7 +25,7 @@ with DAG(
     # Task 2
     co_fund_fetcher = DockerOperator(
         task_id='co_fund_fetcher',
-        image='stock-analyzer-us:v1.0',
+        image='stock-analyzer-us:v2.0',
         command='python -m us.data_pipeline.company_fundamentals.us_co_fundamentals_fetcher',
         mount_tmp_dir=False,   # ← 必加
         docker_url='unix://var/run/docker.sock',
@@ -36,7 +36,7 @@ with DAG(
     # Task 3
     co_screener = DockerOperator(
         task_id='co_screener',
-        image='stock-analyzer-us:v1.0',
+        image='stock-analyzer-us:v2.0',
         command='python -m us.data_pipeline.company_screening.us_co_screener',
         mount_tmp_dir=False,   # ← 必加
         docker_url='unix://var/run/docker.sock',

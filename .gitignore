@@ -163,3 +163,6 @@ data/
 # Airflow 執行時產生
 airflow_workspace/logs/
 airflow_workspace/plugins/__pycache__/
+
+# Java build artifacts
+*.jar
